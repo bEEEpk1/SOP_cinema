@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Final educational iteration.
+
+        Build everything:
+            ./mvnw clean package -DskipTests
+
+        Infrastructure:
+            docker compose -f infra/docker/docker-compose.yml up -d
+
+        Run services separately, or create an IntelliJ Compound configuration:
+            ./mvnw spring-boot:run -pl cinema-pricing -am
+            ./mvnw spring-boot:run -pl cinema-loyalty -am
+            ./mvnw spring-boot:run -pl cinema-analytics-server -am
+            ./mvnw spring-boot:run -pl cinema-enrichment-client -am
+            ./mvnw spring-boot:run -pl audit-service -am
+            ./mvnw spring-boot:run -pl notification-service -am
+            ./mvnw spring-boot:run -pl cinema-core -am
+    -->
+
+    <groupId>edu.rutmiit.demo</groupId>
+    <artifactId>cinema-root</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <name>cinema [root aggregator]</name>
+
+    <modules>
+        <module>cinema-contract-api</module>
+        <module>cinema-events-contract</module>
+        <module>cinema-grpc-contract</module>
+
+        <module>cinema-core</module>
+        <module>audit-service</module>
+        <module>notification-service</module>
+        <module>cinema-pricing</module>
+        <module>cinema-loyalty</module>
+        <module>cinema-analytics-server</module>
+        <module>cinema-enrichment-client</module>
+    </modules>
+</project>

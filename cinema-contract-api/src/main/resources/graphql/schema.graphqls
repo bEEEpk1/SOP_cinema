@@ -1,0 +1,181 @@
+# =============================================================================
+# GraphQL-контракт для Cinema API
+# GraphQL слой переиспользует существующий service layer cinema-core и не вводит
+# новую бизнес-логику.
+# =============================================================================
+
+scalar DateTime
+scalar Date
+
+type Customer {
+    id: ID!
+    email: String!
+    phone: String!
+    registered: Boolean!
+    createdAt: DateTime
+    bookings(page: Int = 0, size: Int = 20): BookingConnection!
+    waitlistEntries(page: Int = 0, size: Int = 20): WaitlistEntryConnection!
+}
+
+type Movie {
+    id: ID!
+    title: String!
+    description: String
+    durationMinutes: Int!
+    ageRating: String!
+    genre: String!
+    active: Boolean!
+    shows(page: Int = 0, size: Int = 20): ShowConnection!
+}
+
+type Hall {
+    id: ID!
+    name: String!
+    hallType: String!
+    capacity: Int!
+    active: Boolean!
+    seats(page: Int = 0, size: Int = 20): SeatConnection!
+    shows(page: Int = 0, size: Int = 20): ShowConnection!
+}
+
+type Seat {
+    id: ID!
+    hallId: ID!
+    rowNumber: Int!
+    seatNumber: Int!
+    seatType: String!
+    active: Boolean!
+    availabilityStatus: String
+    hall: Hall
+}
+
+type Show {
+    id: ID!
+    movieId: ID!
+    hallId: ID!
+    startTime: DateTime!
+    endTime: DateTime!
+    basePrice: Float!
+    currency: String!
+    status: String!
+    movie: Movie
+    hall: Hall
+    seats(availabilityStatus: String, page: Int = 0, size: Int = 50): SeatConnection!
+    bookings(status: BookingStatus, page: Int = 0, size: Int = 20): BookingConnection!
+    waitlistEntries(status: WaitlistStatus, page: Int = 0, size: Int = 20): WaitlistEntryConnection!
+}
+
+type Booking {
+    id: ID!
+    showId: ID!
+    seatId: ID!
+    customerId: ID!
+    customerEmail: String!
+    status: String!
+    reservedUntil: DateTime!
+    finalPrice: Float!
+    currency: String!
+    paymentReference: String
+    loyaltyPointsUsed: Int!
+    customer: Customer
+    show: Show
+    seat: Seat
+    ticket: Ticket
+}
+
+type Ticket {
+    id: ID!
+    bookingId: ID!
+    ticketNumber: String!
+    status: String!
+    qrCode: String!
+    booking: Booking
+}
+
+type WaitlistEntry {
+    id: ID!
+    showId: ID!
+    seatId: ID
+    customerId: ID!
+    customerEmail: String!
+    status: String!
+    customer: Customer
+    show: Show
+    seat: Seat
+}
+
+type PageInfo {
+    pageNumber: Int!
+    pageSize: Int!
+    totalPages: Int!
+    last: Boolean!
+}
+
+type CustomerConnection { content: [Customer!]! pageInfo: PageInfo! totalElements: Int! }
+type MovieConnection { content: [Movie!]! pageInfo: PageInfo! totalElements: Int! }
+type HallConnection { content: [Hall!]! pageInfo: PageInfo! totalElements: Int! }
+type SeatConnection { content: [Seat!]! pageInfo: PageInfo! totalElements: Int! }
+type ShowConnection { content: [Show!]! pageInfo: PageInfo! totalElements: Int! }
+type BookingConnection { content: [Booking!]! pageInfo: PageInfo! totalElements: Int! }
+type TicketConnection { content: [Ticket!]! pageInfo: PageInfo! totalElements: Int! }
+type WaitlistEntryConnection { content: [WaitlistEntry!]! pageInfo: PageInfo! totalElements: Int! }
+
+enum HallType { STANDARD IMAX VIP DOLBY_ATMOS }
+enum ShowStatus { SCHEDULED CANCELLED FINISHED }
+enum BookingStatus { PENDING_PAYMENT PAID CANCELLED EXPIRED }
+enum WaitlistStatus { ACTIVE NOTIFIED FULFILLED CANCELLED EXPIRED }
+
+input CustomerFilter { emailSearch: String phoneSearch: String }
+input MovieFilter { genre: String titleSearch: String }
+input HallFilter { hallType: HallType }
+input ShowFilter { movieId: ID hallId: ID status: ShowStatus showDate: Date }
+input BookingFilter { customerId: ID showId: ID status: BookingStatus }
+input TicketFilter { bookingId: ID customerId: ID showId: ID }
+input WaitlistFilter { showId: ID customerId: ID status: WaitlistStatus }
+
+input CreateCustomerInput { email: String! phone: String! registered: Boolean! passwordHash: String }
+input PatchCustomerInput { email: String phone: String }
+input CreateMovieInput { title: String! description: String durationMinutes: Int! ageRating: String! genre: String! }
+input UpdateMovieInput { title: String! description: String durationMinutes: Int! ageRating: String! genre: String! active: Boolean! }
+input PatchMovieInput { title: String description: String durationMinutes: Int ageRating: String genre: String active: Boolean }
+input CreateHallInput { name: String! hallType: HallType! capacity: Int! }
+input CreateShowInput { movieId: ID! hallId: ID! startTime: DateTime! endTime: DateTime! basePrice: Float! currency: String! }
+input PatchShowInput { movieId: ID hallId: ID startTime: DateTime endTime: DateTime basePrice: Float currency: String status: ShowStatus }
+input CreateBookingInput { showId: ID! seatId: ID! customerId: ID! customerEmail: String! loyaltyPointsUsed: Int }
+input PatchBookingInput { customerEmail: String status: BookingStatus paymentReference: String loyaltyPointsUsed: Int }
+input CreateWaitlistInput { showId: ID! seatId: ID customerId: ID! customerEmail: String! }
+
+type Query {
+    customer(id: ID!): Customer
+    customers(filter: CustomerFilter, page: Int = 0, size: Int = 20): CustomerConnection!
+    movie(id: ID!): Movie
+    movies(filter: MovieFilter, page: Int = 0, size: Int = 20): MovieConnection!
+    hall(id: ID!): Hall
+    halls(filter: HallFilter, page: Int = 0, size: Int = 20): HallConnection!
+    show(id: ID!): Show
+    shows(filter: ShowFilter, page: Int = 0, size: Int = 20): ShowConnection!
+    booking(id: ID!): Booking
+    bookings(filter: BookingFilter, page: Int = 0, size: Int = 20): BookingConnection!
+    ticket(id: ID!): Ticket
+    ticketByBooking(bookingId: ID!): Ticket
+    tickets(filter: TicketFilter, page: Int = 0, size: Int = 20): TicketConnection!
+    waitlistEntry(id: ID!): WaitlistEntry
+    waitlistEntries(filter: WaitlistFilter, page: Int = 0, size: Int = 20): WaitlistEntryConnection!
+}
+
+type Mutation {
+    createCustomer(input: CreateCustomerInput!): Customer!
+    patchCustomer(id: ID!, input: PatchCustomerInput!): Customer!
+    createMovie(input: CreateMovieInput!): Movie!
+    updateMovie(id: ID!, input: UpdateMovieInput!): Movie!
+    patchMovie(id: ID!, input: PatchMovieInput!): Movie!
+    deleteMovie(id: ID!): Boolean!
+    createHall(input: CreateHallInput!): Hall!
+    createShow(input: CreateShowInput!): Show!
+    patchShow(id: ID!, input: PatchShowInput!): Show!
+    createBooking(input: CreateBookingInput!): Booking!
+    patchBooking(id: ID!, input: PatchBookingInput!): Booking!
+    cancelBooking(id: ID!): Boolean!
+    createWaitlistEntry(input: CreateWaitlistInput!): WaitlistEntry!
+    cancelWaitlistEntry(id: ID!): Boolean!
+}

@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package cinema.loyalty;
+
+option java_multiple_files = true;
+option java_package = "edu.rutmiit.demo.cinemagrpc.loyalty";
+option java_outer_classname = "LoyaltyProto";
+
+service LoyaltyService {
+  rpc RegisterCustomer (RegisterCustomerRequest) returns (RegisterCustomerResponse);
+  rpc NormalizeRequestedPoints (NormalizeRequestedPointsRequest) returns (NormalizeRequestedPointsResponse);
+  rpc ApplyPointsOnPayment (ApplyPointsOnPaymentRequest) returns (ApplyPointsOnPaymentResponse);
+  rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+  rpc EarnPointsForBooking (EarnPointsForBookingRequest) returns (EarnPointsForBookingResponse);
+  rpc RollbackBookingPoints (RollbackBookingPointsRequest) returns (RollbackBookingPointsResponse);
+}
+
+message RegisterCustomerRequest {
+  int64 customer_id = 1;
+  int32 initial_points = 2;
+}
+
+message RegisterCustomerResponse {
+  bool success = 1;
+  int32 current_points_balance = 2;
+  string message = 3;
+}
+
+message NormalizeRequestedPointsRequest {
+  int64 customer_id = 1;
+  int32 requested_points = 2;
+}
+
+message NormalizeRequestedPointsResponse {
+  int32 normalized_points = 1;
+  int32 available_points = 2;
+}
+
+message ApplyPointsOnPaymentRequest {
+  int64 customer_id = 1;
+  int64 booking_id = 2;
+  int32 points_used = 3;
+}
+
+message ApplyPointsOnPaymentResponse {
+  bool success = 1;
+  int32 remaining_points = 2;
+  string message = 3;
+}
+
+message GetBalanceRequest {
+  int64 customer_id = 1;
+}
+
+message GetBalanceResponse {
+  int64 customer_id = 1;
+  int32 points_balance = 2;
+}
+
+message EarnPointsForBookingRequest {
+  int64 customer_id = 1;
+  int64 booking_id = 2;
+  string final_price = 3;
+  string currency = 4;
+}
+
+message EarnPointsForBookingResponse {
+  bool success = 1;
+  int32 earned_points = 2;
+  int32 current_points_balance = 3;
+  string message = 4;
+}
+
+message RollbackBookingPointsRequest {
+  int64 customer_id = 1;
+  int64 booking_id = 2;
+}
+
+message RollbackBookingPointsResponse {
+  bool success = 1;
+  int32 restored_spent_points = 2;
+  int32 deducted_earned_points = 3;
+  int32 current_points_balance = 4;
+  string message = 5;
+}

@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: cinema-enrichment-client
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 2000
+          max-attempts: 3
+          multiplier: 2.0
+
+server:
+  port: 8086
+
+grpc:
+  analytics:
+    host: localhost
+    port: 9092
+  loyalty:
+    host: localhost
+    port: 9091
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+cinema:
+  core:
+    base-url: http://localhost:8080

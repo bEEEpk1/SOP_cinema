@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinema Notification Service</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Arial, sans-serif; }
+    body { margin: 0; background: #111827; color: #e5e7eb; }
+    header { padding: 24px 32px; background: #0f172a; border-bottom: 1px solid #334155; }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    .muted { color: #94a3b8; }
+    main { padding: 24px 32px; max-width: 1100px; }
+    .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: #1f2937; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+    .dot.open { background: #22c55e; }
+    .actions { margin: 18px 0; display: flex; gap: 12px; }
+    button { border: 0; border-radius: 8px; padding: 10px 14px; color: white; background: #2563eb; cursor: pointer; }
+    button.secondary { background: #374151; }
+    .list { display: grid; gap: 12px; margin-top: 20px; }
+    .card { background: #1f2937; border: 1px solid #374151; border-left: 4px solid #60a5fa; border-radius: 12px; padding: 14px 16px; }
+    .card.success { border-left-color: #22c55e; }
+    .card.warning { border-left-color: #f59e0b; }
+    .title { font-weight: 700; margin-bottom: 6px; }
+    .meta { font-size: 12px; color: #94a3b8; margin-top: 10px; word-break: break-word; }
+    code { color: #93c5fd; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Cinema Notification Service</h1>
+  <div class="muted">WebSocket demo endpoint: <code>ws://localhost:8082/ws/notifications</code></div>
+</header>
+<main>
+  <div class="status"><span id="dot" class="dot"></span><span id="status">disconnected</span></div>
+  <div class="actions">
+    <button onclick="connect()">Connect</button>
+    <button class="secondary" onclick="disconnect()">Disconnect</button>
+    <button class="secondary" onclick="loadHistory()">Load recent</button>
+    <button class="secondary" onclick="clearList()">Clear screen</button>
+  </div>
+  <p class="muted">Создайте/оплатите бронь через cinema-core Swagger — события появятся здесь в реальном времени.</p>
+  <section id="list" class="list"></section>
+</main>
+<script>
+  let socket = null;
+  const statusEl = document.getElementById('status');
+  const dotEl = document.getElementById('dot');
+  const listEl = document.getElementById('list');
+
+  function setStatus(text, open) {
+    statusEl.textContent = text;
+    dotEl.classList.toggle('open', open);
+  }
+
+  function connect() {
+    if (socket && socket.readyState === WebSocket.OPEN) return;
+    socket = new WebSocket('ws://localhost:8082/ws/notifications');
+    socket.onopen = () => setStatus('connected', true);
+    socket.onclose = () => setStatus('disconnected', false);
+    socket.onerror = () => setStatus('error', false);
+    socket.onmessage = (event) => addCard(JSON.parse(event.data));
+  }
+
+  function disconnect() {
+    if (socket) socket.close();
+  }
+
+  function clearList() {
+    listEl.innerHTML = '';
+  }
+
+  async function loadHistory() {
+    const response = await fetch('/api/notifications?limit=50');
+    const data = await response.json();
+    clearList();
+    [...data.entries].reverse().forEach(addCard);
+  }
+
+  function addCard(item) {
+    const card = document.createElement('article');
+    card.className = `card ${item.level || 'info'}`;
+    const time = item.receivedAt || new Date().toISOString();
+    card.innerHTML = `
+      <div class="title">${escapeHtml(item.title || item.type)}</div>
+      <div>${escapeHtml(item.message || '')}</div>
+      <div class="meta">
+        type=${escapeHtml(item.eventType || item.type || '')}<br/>
+        source=${escapeHtml(item.source || '')}<br/>
+        eventId=${escapeHtml(item.eventId || '')}<br/>
+        receivedAt=${escapeHtml(time)}
+      </div>`;
+    listEl.prepend(card);
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+
+  connect();
+</script>
+</body>
+</html>

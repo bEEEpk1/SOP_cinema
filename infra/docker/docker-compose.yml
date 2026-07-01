@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cinema-postgres
+    environment:
+      POSTGRES_DB: cinema_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - cinema_postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: cinema-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: cinema-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  cinema_postgres_data:

@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package cinema.pricing;
+
+option java_multiple_files = true;
+option java_package = "edu.rutmiit.demo.cinemagrpc.pricing";
+option java_outer_classname = "PricingProto";
+
+service PricingService {
+  rpc CalculateFinalPrice (CalculateFinalPriceRequest) returns (CalculateFinalPriceResponse);
+}
+
+message CalculateFinalPriceRequest {
+  int64 show_id = 1;
+  int64 seat_id = 2;
+  int64 customer_id = 3;
+
+  string base_price = 4;
+  string currency = 5;
+
+  string hall_type = 6;
+  string seat_type = 7;
+  string start_time = 8;
+
+  int32 total_seats = 9;
+  int32 occupied_seats = 10;
+}
+
+message CalculateFinalPriceResponse {
+  string final_price = 1;
+  string currency = 2;
+  string explanation = 3;
+
+  string base_price = 4;
+  string seat_type_surcharge = 5;
+  string hall_type_multiplier = 6;
+  string time_of_day_multiplier = 7;
+  string day_of_week_multiplier = 8;
+  string occupancy_multiplier = 9;
+  double occupancy_rate = 10;
+}

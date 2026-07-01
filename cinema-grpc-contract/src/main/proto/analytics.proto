@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package cinema.analytics;
+
+option java_multiple_files = true;
+option java_package = "edu.rutmiit.demo.cinemagrpc.analytics";
+option java_outer_classname = "AnalyticsProto";
+
+service TicketAnalyticsService {
+  rpc EnrichTicket (EnrichTicketRequest) returns (EnrichTicketResponse);
+}
+
+message EnrichTicketRequest {
+  int64 ticket_id = 1;
+  int64 booking_id = 2;
+  string ticket_number = 3;
+  string customer_email = 4;
+
+  int64 movie_id = 5;
+  string movie_title = 6;
+  string movie_genre = 7;
+  int32 movie_duration_minutes = 8;
+
+  int64 show_id = 9;
+  string show_start_time = 10;
+  string show_end_time = 11;
+
+  string hall_name = 12;
+  int32 row_number = 13;
+  int32 seat_number = 14;
+
+  repeated RecommendedMovie candidate_movies = 15;
+}
+
+message EnrichTicketResponse {
+  int64 ticket_id = 1;
+  int64 booking_id = 2;
+  string ticket_number = 3;
+  string customer_email = 4;
+
+  int64 movie_id = 5;
+  string movie_title = 6;
+  string movie_genre = 7;
+  int32 movie_duration_minutes = 8;
+
+  int64 show_id = 9;
+  string show_start_time = 10;
+  string show_end_time = 11;
+  string show_time_info = 12;
+
+  string hall_name = 13;
+  string seat_info = 14;
+
+  repeated RecommendedMovie recommended_movies = 15;
+
+  string entry_instruction = 16;
+  string refund_deadline_info = 17;
+}
+
+message RecommendedMovie {
+  int64 movie_id = 1;
+  string title = 2;
+  string genre = 3;
+  int32 duration_minutes = 4;
+}
